@@ -1,27 +1,70 @@
+:root {
+    --bg-color: #f0f2f5;
+    --container-bg: #fff;
+    --text-color: #333;
+    --row-bg: #f9f9f9;
+    --row-text: #555;
+    --btn-bg: #4CAF50;
+    --btn-hover: #45a049;
+    --shadow-color: rgba(31, 38, 135, 0.37);
+}
+
+[data-theme="dark"] {
+    --bg-color: #1a1a1a;
+    --container-bg: #2d2d2d;
+    --text-color: #e0e0e0;
+    --row-bg: #3d3d3d;
+    --row-text: #ccc;
+    --shadow-color: rgba(0, 0, 0, 0.5);
+}
+
 body {
     font-family: sans-serif;
-    background-color: #f0f2f5;
+    background-color: var(--bg-color);
     background-image: url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Cpath d='M5 0h1L0 6V5zM6 5v1H5z'/%3E%3C/g%3E%3C/svg%3E");
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     margin: 0;
+    transition: background-color 0.3s ease;
 }
 
 .container {
-    background-color: #fff;
+    background-color: var(--container-bg);
     padding: 2rem;
     border-radius: 12px;
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    box-shadow: 0 8px 32px 0 var(--shadow-color);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     text-align: center;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.theme-toggle {
+    text-align: right;
+    margin-bottom: 1rem;
+}
+
+#theme-btn {
+    background: none;
+    border: 1px solid var(--text-color);
+    color: var(--text-color);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+#theme-btn:hover {
+    background-color: var(--text-color);
+    color: var(--container-bg);
 }
 
 h1 {
-    color: #333;
+    color: var(--text-color);
     margin-bottom: 2rem;
     font-size: 2rem;
 }
@@ -35,15 +78,15 @@ h1 {
 
 .lotto-row {
     font-size: 1.2rem;
-    color: #555;
-    background-color: #f9f9f9;
+    color: var(--row-text);
+    background-color: var(--row-bg);
     padding: 0.8rem;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 #generate-btn {
-    background-color: #4CAF50;
+    background-color: var(--btn-bg);
     color: white;
     padding: 1rem 2rem;
     border: none;
@@ -55,5 +98,5 @@ h1 {
 }
 
 #generate-btn:hover {
-    background-color: #45a049;
+    background-color: var(--btn-hover);
 }
