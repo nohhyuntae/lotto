@@ -18,16 +18,51 @@
     --shadow-color: rgba(0, 0, 0, 0.5);
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 body {
     font-family: sans-serif;
     background-color: var(--bg-color);
     background-image: url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Cpath d='M5 0h1L0 6V5zM6 5v1H5z'/%3E%3C/g%3E%3C/svg%3E");
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
     min-height: 100vh;
     margin: 0;
     transition: background-color 0.3s ease;
+}
+
+.navbar {
+    width: 100%;
+    background-color: var(--container-bg);
+    box-shadow: 0 2px 10px var(--shadow-color);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    transition: background-color 0.3s ease;
+}
+
+.nav-container {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    padding: 1rem;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: var(--text-color);
+    font-weight: bold;
+    font-size: 1rem;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: #3498db;
 }
 
 .container {
@@ -40,6 +75,13 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.1);
     text-align: center;
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    margin: 2rem 1rem;
+    width: 90%;
+    max-width: 600px;
+}
+
+#lotto-section, #contact-section {
+    scroll-margin-top: 80px;
 }
 
 .theme-toggle {

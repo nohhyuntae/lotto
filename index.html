@@ -7,17 +7,25 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#lotto-section" class="nav-link">로또번호생성</a>
+            <a href="#contact-section" class="nav-link">제휴 및 비즈니스 문의</a>
+        </div>
+    </nav>
     <div class="container">
         <div class="theme-toggle">
             <button id="theme-btn">🌙 Dark Mode</button>
         </div>
-        <h1>Lotto Number Generator</h1>
-        <div id="lotto-numbers" class="lotto-numbers-container">
-            <!-- Lotto numbers will be displayed here -->
+        <div id="lotto-section">
+            <h1>Lotto Number Generator</h1>
+            <div id="lotto-numbers" class="lotto-numbers-container">
+                <!-- Lotto numbers will be displayed here -->
+            </div>
+            <button id="generate-btn">Generate Numbers</button>
         </div>
-        <button id="generate-btn">Generate Numbers</button>
 
-        <div class="contact-section">
+        <div id="contact-section" class="contact-section">
             <hr>
             <h3>제휴 및 비즈니스 문의</h3>
             <p style="color: var(--row-text); margin-bottom: 1.5rem; font-size: 0.9rem;">
