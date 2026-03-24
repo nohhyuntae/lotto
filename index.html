@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lotto Number Generator</title>
+    <title>Lotto & Animal Type Test</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <nav class="navbar">
         <div class="nav-container">
             <a href="#lotto-section" class="nav-link">로또번호생성</a>
+            <a href="#animal-section" class="nav-link">동물상 테스트</a>
             <a href="#contact-section" class="nav-link">제휴 및 비즈니스 문의</a>
             <a href="#comments-section" class="nav-link">댓글</a>
         </div>
@@ -18,7 +19,9 @@
         <div class="theme-toggle">
             <button id="theme-btn">🌙 Dark Mode</button>
         </div>
-        <div id="lotto-section">
+
+        <!-- Lotto Section -->
+        <div id="lotto-section" class="section">
             <h1>Lotto Number Generator</h1>
             <div id="lotto-numbers" class="lotto-numbers-container">
                 <!-- Lotto numbers will be displayed here -->
@@ -26,7 +29,22 @@
             <button id="generate-btn">Generate Numbers</button>
         </div>
 
-        <div id="contact-section" class="contact-section">
+        <!-- Animal Type Test Section -->
+        <div id="animal-section" class="section">
+            <hr>
+            <h3>동물상 테스트 (강아지 vs 고양이)</h3>
+            <p style="color: var(--row-text); margin-bottom: 1.5rem; font-size: 0.9rem;">
+                카메라를 허용하고 자신의 얼굴이 강아지상인지 고양이상인지 확인해보세요!
+            </p>
+            <div class="animal-test-container">
+                <button type="button" id="start-webcam-btn" onclick="initAnimalTest()">테스트 시작하기</button>
+                <div id="webcam-container"></div>
+                <div id="label-container"></div>
+            </div>
+        </div>
+
+        <!-- Contact Section -->
+        <div id="contact-section" class="section">
             <hr>
             <h3>제휴 및 비즈니스 문의</h3>
             <p style="color: var(--row-text); margin-bottom: 1.5rem; font-size: 0.9rem;">
@@ -48,32 +66,19 @@
                     <input type="text" name="subject" placeholder="문의 제목" required>
                 </div>
                 <div class="form-group">
-                    <input type="text" name="subject" placeholder="문의 제목" required>
-                </div>
-                <div class="form-group">
                     <textarea name="message" placeholder="문의 내용을 상세히 적어주세요." required></textarea>
                 </div>
-                <!-- Formspree setting: redirection after submission -->
-                <!-- <input type="hidden" name="_next" value="https://yourdomain.com/thanks.html"> -->
                 <button type="submit" id="submit-btn">문의하기</button>
             </form>
         </div>
 
-        <div id="comments-section" class="comments-section">
+        <!-- Comments Section -->
+        <div id="comments-section" class="section">
             <hr>
             <h3>댓글</h3>
             <div id="disqus_thread"></div>
             <script>
-                /**
-                *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
-                *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables    */
-                /*
-                var disqus_config = function () {
-                this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
-                this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
-                };
-                */
-                (function() { // DON'T EDIT BELOW THIS LINE
+                (function() {
                 var d = document, s = d.createElement('script');
                 s.src = 'https://httpslotto-7vtpagesdev.disqus.com/embed.js';
                 s.setAttribute('data-timestamp', +new Date());
@@ -83,6 +88,74 @@
             <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
         </div>
     </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
     <script src="main.js"></script>
+    <script type="text/javascript">
+        const ANIMAL_MODEL_URL = "https://teachablemachine.withgoogle.com/models/ins6_LFUe/";
+        let model, webcam, labelContainer, maxPredictions;
+        let isWebcamStarted = false;
+
+        async function initAnimalTest() {
+            if (isWebcamStarted) return;
+            isWebcamStarted = true;
+            
+            const startBtn = document.getElementById("start-webcam-btn");
+            startBtn.innerText = "모델 로딩 중...";
+            startBtn.disabled = true;
+
+            const modelURL = ANIMAL_MODEL_URL + "model.json";
+            const metadataURL = ANIMAL_MODEL_URL + "metadata.json";
+
+            try {
+                model = await tmImage.load(modelURL, metadataURL);
+                maxPredictions = model.getTotalClasses();
+
+                const flip = true;
+                webcam = new tmImage.Webcam(250, 250, flip);
+                await webcam.setup();
+                await webcam.play();
+                window.requestAnimationFrame(animalLoop);
+
+                document.getElementById("webcam-container").appendChild(webcam.canvas);
+                labelContainer = document.getElementById("label-container");
+                labelContainer.innerHTML = ""; // Clear existing
+                for (let i = 0; i < maxPredictions; i++) {
+                    const labelDiv = document.createElement("div");
+                    labelDiv.className = "prediction-label";
+                    labelContainer.appendChild(labelDiv);
+                }
+                startBtn.style.display = "none";
+            } catch (error) {
+                console.error(error);
+                alert("카메라 권한을 허용해주세요.");
+                startBtn.innerText = "테스트 시작하기";
+                startBtn.disabled = false;
+                isWebcamStarted = false;
+            }
+        }
+
+        async function animalLoop() {
+            webcam.update();
+            await animalPredict();
+            window.requestAnimationFrame(animalLoop);
+        }
+
+        async function animalPredict() {
+            const prediction = await model.predict(webcam.canvas);
+            for (let i = 0; i < maxPredictions; i++) {
+                const probability = (prediction[i].probability * 100).toFixed(0);
+                const className = prediction[i].className;
+                labelContainer.childNodes[i].innerHTML = `
+                    <div class="label-text">${className}: ${probability}%</div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: ${probability}%"></div>
+                    </div>
+                `;
+            }
+        }
+    </script>
 </body>
 </html>
