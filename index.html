@@ -34,11 +34,14 @@
             <hr>
             <h3>동물상 테스트 (강아지 vs 고양이)</h3>
             <p style="color: var(--row-text); margin-bottom: 1.5rem; font-size: 0.9rem;">
-                카메라를 허용하고 자신의 얼굴이 강아지상인지 고양이상인지 확인해보세요!
+                사진 파일을 업로드하여 강아지상인지 고양이상인지 확인해보세요!
             </p>
             <div class="animal-test-container">
-                <button type="button" id="start-webcam-btn" onclick="initAnimalTest()">테스트 시작하기</button>
-                <div id="webcam-container"></div>
+                <input type="file" id="image-upload" accept="image/*" onchange="predictImage(event)" style="display:none;">
+                <button type="button" id="upload-btn" onclick="document.getElementById('image-upload').click()">사진 업로드하기</button>
+                <div id="image-preview-container">
+                    <img id="image-preview" src="" alt="preview" style="display:none;">
+                </div>
                 <div id="label-container"></div>
             </div>
         </div>
@@ -95,66 +98,62 @@
     <script src="main.js"></script>
     <script type="text/javascript">
         const ANIMAL_MODEL_URL = "https://teachablemachine.withgoogle.com/models/ins6_LFUe/";
-        let model, webcam, labelContainer, maxPredictions;
-        let isWebcamStarted = false;
+        let model, labelContainer, maxPredictions;
 
-        async function initAnimalTest() {
-            if (isWebcamStarted) return;
-            isWebcamStarted = true;
-            
-            const startBtn = document.getElementById("start-webcam-btn");
-            startBtn.innerText = "모델 로딩 중...";
-            startBtn.disabled = true;
-
+        async function loadModel() {
+            if (model) return;
             const modelURL = ANIMAL_MODEL_URL + "model.json";
             const metadataURL = ANIMAL_MODEL_URL + "metadata.json";
+            model = await tmImage.load(modelURL, metadataURL);
+            maxPredictions = model.getTotalClasses();
+        }
 
-            try {
-                model = await tmImage.load(modelURL, metadataURL);
-                maxPredictions = model.getTotalClasses();
+        async function predictImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
 
-                const flip = true;
-                webcam = new tmImage.Webcam(250, 250, flip);
-                await webcam.setup();
-                await webcam.play();
-                window.requestAnimationFrame(animalLoop);
+            const uploadBtn = document.getElementById("upload-btn");
+            const originalText = uploadBtn.innerText;
+            uploadBtn.innerText = "분석 중...";
+            uploadBtn.disabled = true;
 
-                document.getElementById("webcam-container").appendChild(webcam.canvas);
-                labelContainer = document.getElementById("label-container");
-                labelContainer.innerHTML = ""; // Clear existing
-                for (let i = 0; i < maxPredictions; i++) {
-                    const labelDiv = document.createElement("div");
-                    labelDiv.className = "prediction-label";
-                    labelContainer.appendChild(labelDiv);
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const imgElement = document.getElementById('image-preview');
+                imgElement.src = e.target.result;
+                imgElement.style.display = 'block';
+
+                try {
+                    await loadModel();
+                    
+                    labelContainer = document.getElementById("label-container");
+                    labelContainer.innerHTML = "";
+                    for (let i = 0; i < maxPredictions; i++) {
+                        const labelDiv = document.createElement("div");
+                        labelDiv.className = "prediction-label";
+                        labelContainer.appendChild(labelDiv);
+                    }
+
+                    const prediction = await model.predict(imgElement);
+                    for (let i = 0; i < maxPredictions; i++) {
+                        const probability = (prediction[i].probability * 100).toFixed(0);
+                        const className = prediction[i].className;
+                        labelContainer.childNodes[i].innerHTML = `
+                            <div class="label-text">${className}: ${probability}%</div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" style="width: ${probability}%"></div>
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    console.error(error);
+                    alert("분석 중 오류가 발생했습니다.");
+                } finally {
+                    uploadBtn.innerText = originalText;
+                    uploadBtn.disabled = false;
                 }
-                startBtn.style.display = "none";
-            } catch (error) {
-                console.error(error);
-                alert("카메라 권한을 허용해주세요.");
-                startBtn.innerText = "테스트 시작하기";
-                startBtn.disabled = false;
-                isWebcamStarted = false;
-            }
-        }
-
-        async function animalLoop() {
-            webcam.update();
-            await animalPredict();
-            window.requestAnimationFrame(animalLoop);
-        }
-
-        async function animalPredict() {
-            const prediction = await model.predict(webcam.canvas);
-            for (let i = 0; i < maxPredictions; i++) {
-                const probability = (prediction[i].probability * 100).toFixed(0);
-                const className = prediction[i].className;
-                labelContainer.childNodes[i].innerHTML = `
-                    <div class="label-text">${className}: ${probability}%</div>
-                    <div class="progress-bar-container">
-                        <div class="progress-bar" style="width: ${probability}%"></div>
-                    </div>
-                `;
-            }
+            };
+            reader.readAsDataURL(file);
         }
     </script>
 </body>
