@@ -124,6 +124,15 @@ h1 {
     gap: 1rem;
 }
 
+.form-row {
+    display: flex;
+    gap: 1rem;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
 .form-group input,
 .form-group textarea {
     width: 100%;
@@ -134,24 +143,42 @@ h1 {
     color: var(--text-color);
     box-sizing: border-box;
     font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #3498db;
 }
 
 .form-group textarea {
-    min-height: 100px;
+    min-height: 120px;
     resize: vertical;
+}
+
+@media (max-width: 480px) {
+    .form-row {
+        flex-direction: column;
+    }
 }
 
 #submit-btn {
     background-color: #3498db;
     color: white;
-    padding: 0.8rem;
+    padding: 1rem;
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    font-size: 1rem;
-    transition: background-color 0.3s ease;
+    font-size: 1.1rem;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.1s ease;
 }
 
 #submit-btn:hover {
     background-color: #2980b9;
+}
+
+#submit-btn:active {
+    transform: scale(0.98);
 }
